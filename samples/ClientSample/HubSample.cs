@@ -28,10 +28,7 @@ namespace ClientSample
 
         public static async Task<int> ExecuteAsync(string baseUrl)
         {
-            SynchronizationContext syncContext = SynchronizationContext.Current;
-            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
-
-            baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:1850/hubs" : baseUrl;
+            baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:1850/default" : baseUrl;
 
             var loggerFactory = new LoggerFactory();
 
