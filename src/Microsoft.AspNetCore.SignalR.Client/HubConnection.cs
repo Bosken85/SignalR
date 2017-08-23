@@ -82,12 +82,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         public async Task StartAsync()
         {
-            var t = SynchronizationContext.Current;
             await StartAsyncCore().ForceAsync();
-            t = SynchronizationContext.Current;
         }
 
-        public async Task StartAsyncCore()
+        private async Task StartAsyncCore()
         {
             var current = SynchronizationContext.Current;
             var transferModeFeature = _connection.Features.Get<ITransferModeFeature>();
@@ -103,7 +101,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                     : TransferMode.Text;
 
             transferModeFeature.TransferMode = requestedTransferMode;
-            await _connection.StartAsync().ForceAsync();
+            await _connection.StartAsync();
             var actualTransferMode = transferModeFeature.TransferMode;
 
             _protocolReaderWriter = new HubProtocolReaderWriter(_protocol, GetDataEncoder(requestedTransferMode, actualTransferMode));
@@ -136,7 +134,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         private async Task DisposeAsyncCore()
         {
-            await _connection.DisposeAsync().ForceAsync();
+            await _connection.DisposeAsync();
         }
 
         // TODO: Client return values/tasks?
@@ -149,20 +147,20 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public ReadableChannel<object> Stream(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
         {
             var irq = InvocationRequest.Stream(cancellationToken, returnType, GetNextId(), _loggerFactory, out var channel);
-            _ = InvokeCore(methodName, irq, args, nonBlocking: false);
+            _ = InvokeCore(methodName, irq, args, nonBlocking: false).ForceAsync();
             return channel;
         }
 
         public async Task<object> InvokeAsync(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
         {
             var irq = InvocationRequest.Invoke(cancellationToken, returnType, GetNextId(), _loggerFactory, out var task);
-            await InvokeCore(methodName, irq, args, nonBlocking: false);
+            await InvokeCore(methodName, irq, args, nonBlocking: false).ForceAsync();
             return await task;
         }
 
-        public async Task SendAsync()
+        public async Task SendAsync(string methodName, CancellationToken cancellationToken, params object[] args)
         {
-            await SendAsyncCore();
+            await SendAsyncCore(methodName, cancellationToken, args).ForceAsync();
         }
         public Task SendAsyncCore(string methodName, CancellationToken cancellationToken, params object[] args)
         {
@@ -212,7 +210,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
                 var payload = _protocolReaderWriter.WriteMessage(invocationMessage);
                 _logger.LogInformation("Sending Invocation '{invocationId}'", invocationMessage.InvocationId);
 
-                await _connection.SendAsync(payload, irq.CancellationToken).ForceAsync();
+                await _connection.SendAsync(payload, irq.CancellationToken);
                 _logger.LogInformation("Sending Invocation '{invocationId}' complete", invocationMessage.InvocationId);
             }
             catch (Exception ex)

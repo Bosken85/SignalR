@@ -112,7 +112,7 @@ namespace Microsoft.AspNetCore.Sockets.Client
                     {
                         _startTcs.SetResult(null);
                     }
-                });
+                }).ForceAsync();
 
             return _startTcs.Task;
         }
@@ -359,6 +359,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
 
         public async Task SendAsync(byte[] data, CancellationToken cancellationToken = default(CancellationToken))
         {
+            await SendAsyncCore(data, cancellationToken).ForceAsync();
+        }
+
+        private async Task SendAsyncCore(byte[] data, CancellationToken cancellationToken = default(CancellationToken))
+        {
             if (data == null)
             {
                 throw new ArgumentNullException(nameof(data));
@@ -390,6 +395,11 @@ namespace Microsoft.AspNetCore.Sockets.Client
         }
 
         public async Task DisposeAsync()
+        {
+            await DisposeAsyncCore().ForceAsync();
+        }
+
+        private async Task DisposeAsyncCore()
         {
             _logger.StoppingClient(_connectionId);
 
