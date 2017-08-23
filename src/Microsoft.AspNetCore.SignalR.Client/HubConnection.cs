@@ -82,6 +82,14 @@ namespace Microsoft.AspNetCore.SignalR.Client
 
         public async Task StartAsync()
         {
+            var t = SynchronizationContext.Current;
+            await StartAsyncCore().ForceAsync();
+            t = SynchronizationContext.Current;
+        }
+
+        public async Task StartAsyncCore()
+        {
+            var current = SynchronizationContext.Current;
             var transferModeFeature = _connection.Features.Get<ITransferModeFeature>();
             if (transferModeFeature == null)
             {
@@ -103,7 +111,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             using (var memoryStream = new MemoryStream())
             {
                 NegotiationProtocol.WriteMessage(new NegotiationMessage(_protocol.Name), memoryStream);
-                await _connection.SendAsync(memoryStream.ToArray(), _connectionActive.Token).ForceAsync();
+                await _connection.SendAsync(memoryStream.ToArray(), _connectionActive.Token);
             }
         }
 
@@ -122,6 +130,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
         }
 
         public async Task DisposeAsync()
+        {
+            await DisposeAsyncCore().ForceAsync();
+        }
+
+        private async Task DisposeAsyncCore()
         {
             await _connection.DisposeAsync().ForceAsync();
         }
@@ -147,7 +160,11 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return await task;
         }
 
-        public Task SendAsync(string methodName, CancellationToken cancellationToken, params object[] args)
+        public async Task SendAsync()
+        {
+            await SendAsyncCore();
+        }
+        public Task SendAsyncCore(string methodName, CancellationToken cancellationToken, params object[] args)
         {
             var irq = InvocationRequest.Invoke(cancellationToken, typeof(void), GetNextId(), _loggerFactory, out _);
             return InvokeCore(methodName, irq, args, nonBlocking: true);

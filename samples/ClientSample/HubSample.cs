@@ -28,7 +28,10 @@ namespace ClientSample
 
         public static async Task<int> ExecuteAsync(string baseUrl)
         {
-            baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:5000/hubs" : baseUrl;
+            SynchronizationContext syncContext = SynchronizationContext.Current;
+            SynchronizationContext.SetSynchronizationContext(new SynchronizationContext());
+
+            baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:1850/hubs" : baseUrl;
 
             var loggerFactory = new LoggerFactory();
 
