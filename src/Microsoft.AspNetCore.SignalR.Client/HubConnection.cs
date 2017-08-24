@@ -80,14 +80,10 @@ namespace Microsoft.AspNetCore.SignalR.Client
             _connection.Closed += Shutdown;
         }
 
-        public async Task StartAsync()
-        {
-            await StartAsyncCore().ForceAsync();
-        }
+        public async Task StartAsync() => await StartAsyncCore().ForceAsync();
 
         private async Task StartAsyncCore()
         {
-            var current = SynchronizationContext.Current;
             var transferModeFeature = _connection.Features.Get<ITransferModeFeature>();
             if (transferModeFeature == null)
             {
@@ -127,10 +123,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
             return new PassThroughEncoder();
         }
 
-        public async Task DisposeAsync()
-        {
-            await DisposeAsyncCore().ForceAsync();
-        }
+        public async Task DisposeAsync() => await DisposeAsyncCore().ForceAsync();
 
         private async Task DisposeAsyncCore()
         {
@@ -147,22 +140,24 @@ namespace Microsoft.AspNetCore.SignalR.Client
         public ReadableChannel<object> Stream(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
         {
             var irq = InvocationRequest.Stream(cancellationToken, returnType, GetNextId(), _loggerFactory, out var channel);
-            _ = InvokeCore(methodName, irq, args, nonBlocking: false).ForceAsync();
+            _ = InvokeCore(methodName, irq, args, nonBlocking: false);
             return channel;
         }
 
-        public async Task<object> InvokeAsync(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
+        public async Task<object> InvokeAsync(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args) =>
+            await InvokeAsyncCore(methodName, returnType, cancellationToken, args).ForceAsync();
+
+        private async Task<object> InvokeAsyncCore(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
         {
             var irq = InvocationRequest.Invoke(cancellationToken, returnType, GetNextId(), _loggerFactory, out var task);
-            await InvokeCore(methodName, irq, args, nonBlocking: false).ForceAsync();
+            await InvokeCore(methodName, irq, args, nonBlocking: false);
             return await task;
         }
 
-        public async Task SendAsync(string methodName, CancellationToken cancellationToken, params object[] args)
-        {
+        public async Task SendAsync(string methodName, CancellationToken cancellationToken, params object[] args) =>
             await SendAsyncCore(methodName, cancellationToken, args).ForceAsync();
-        }
-        public Task SendAsyncCore(string methodName, CancellationToken cancellationToken, params object[] args)
+
+        private Task SendAsyncCore(string methodName, CancellationToken cancellationToken, params object[] args)
         {
             var irq = InvocationRequest.Invoke(cancellationToken, typeof(void), GetNextId(), _loggerFactory, out _);
             return InvokeCore(methodName, irq, args, nonBlocking: true);

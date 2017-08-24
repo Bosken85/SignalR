@@ -28,7 +28,7 @@ namespace ClientSample
 
         public static async Task<int> ExecuteAsync(string baseUrl)
         {
-            baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:1850/default" : baseUrl;
+            baseUrl = string.IsNullOrEmpty(baseUrl) ? "http://localhost:5000/default" : baseUrl;
 
             var loggerFactory = new LoggerFactory();
 
