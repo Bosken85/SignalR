@@ -50,7 +50,6 @@ namespace Microsoft.AspNetCore.Sockets
         }
     }
 
-
     public struct ForceAsyncAwaiter<T> : ICriticalNotifyCompletion
     {
         private readonly Task<T> _task;
