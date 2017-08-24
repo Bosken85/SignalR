@@ -20,6 +20,11 @@ namespace Microsoft.AspNetCore.Sockets
         {
             return new ForceAsyncAwaiter(task);
         }
+
+        public static ForceAsyncAwaiter<T> ForceAsync<T>(this Task<T> task)
+        {
+            return new ForceAsyncAwaiter<T>(task);
+        }
     }
 
     public struct ForceAsyncAwaiter : ICriticalNotifyCompletion
@@ -33,6 +38,30 @@ namespace Microsoft.AspNetCore.Sockets
         public bool IsCompleted { get { return false; } } // the purpose of this type is to always force a continuation
 
         public void GetResult() { _task.GetAwaiter().GetResult(); }
+
+        public void OnCompleted(Action action)
+        {
+            _task.ConfigureAwait(false).GetAwaiter().OnCompleted(action);
+        }
+
+        public void UnsafeOnCompleted(Action action)
+        {
+            _task.ConfigureAwait(false).GetAwaiter().UnsafeOnCompleted(action);
+        }
+    }
+
+
+    public struct ForceAsyncAwaiter<T> : ICriticalNotifyCompletion
+    {
+        private readonly Task<T> _task;
+
+        internal ForceAsyncAwaiter(Task<T> task) { _task = task; }
+
+        public ForceAsyncAwaiter<T> GetAwaiter() { return this; }
+
+        public bool IsCompleted { get { return false; } } // the purpose of this type is to always force a continuation
+
+        public T GetResult() { return _task.GetAwaiter().GetResult(); }
 
         public void OnCompleted(Action action)
         {

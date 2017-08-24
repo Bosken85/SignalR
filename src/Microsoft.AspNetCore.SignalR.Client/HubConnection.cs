@@ -145,7 +145,7 @@ namespace Microsoft.AspNetCore.SignalR.Client
         }
 
         public async Task<object> InvokeAsync(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args) =>
-            await InvokeAsyncCore(methodName, returnType, cancellationToken, args).ForceAsync();
+             await InvokeAsyncCore(methodName, returnType, cancellationToken, args).ForceAsync();
 
         private async Task<object> InvokeAsyncCore(string methodName, Type returnType, CancellationToken cancellationToken, params object[] args)
         {
